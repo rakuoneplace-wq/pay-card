@@ -7,7 +7,7 @@
     <style>
         body {
             background-color: #f0f2f5;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -29,21 +29,32 @@
         .section { margin-bottom: 25px; }
         .label { font-size: 13px; color: #888; margin-bottom: 5px; }
         
-        /* 讓數字大一點，且看起來像按鈕 */
+        /* 數值顯示框 */
         .value-box {
             background: #f8f9fa;
             color: #333;
             font-size: 28px;
             font-weight: bold;
-            font-family: monospace; /* 等寬字體，方便閱讀數字 */
-            padding: 10px;
-            border-radius: 8px;
+            font-family: monospace;
+            padding: 15px 10px; /* 稍微加大內距 */
+            border-radius: 12px;
             border: 1px solid #eee;
-            cursor: pointer; /* 讓滑鼠變成手指 */
+            cursor: pointer;
             position: relative;
+            line-height: 1.2; /* 讓多行文字不擠在一起 */
         }
-        .value-box:active { background: #e2e6ea; } /* 點下去的效果 */
+        .value-box:active { background: #e2e6ea; }
         
+        /* 銀行中文名的樣式 */
+        .bank-name {
+            display: block; /* 換行顯示 */
+            font-size: 15px;
+            color: #666;
+            font-weight: normal;
+            font-family: -apple-system, sans-serif;
+            margin-top: 5px;
+        }
+
         .hint { font-size: 12px; color: #28a745; margin-top: 5px; height: 15px; opacity: 0; transition: opacity 0.3s;}
         .hint.show { opacity: 1; }
 
@@ -77,31 +88,62 @@
 </div>
 
 <script>
-    // 1. 讀取網址參數
+    // 1. 銀行對照表 (對應你產生器裡的選單)
+    const bankMap = {
+        "004": "臺灣銀行", "005": "土地銀行", "006": "合作金庫", "007": "第一銀行",
+        "008": "華南銀行", "009": "彰化銀行", "011": "上海商銀", "012": "台北富邦",
+        "013": "國泰世華", "016": "高雄銀行", "017": "兆豐銀行", "021": "花旗台灣",
+        "048": "王道銀行", "050": "臺灣企銀", "052": "渣打銀行", "053": "台中銀行",
+        "054": "京城銀行", "081": "滙豐銀行", "101": "瑞興銀行", "102": "華泰銀行",
+        "103": "新光銀行", "108": "陽信銀行", "118": "板信銀行", "147": "三信商銀",
+        "700": "中華郵政", "803": "聯邦銀行", "805": "遠東商銀", "806": "元大銀行",
+        "807": "永豐銀行", "808": "玉山銀行", "809": "凱基銀行", "810": "星展銀行",
+        "812": "台新銀行", "822": "中國信託", "823": "將來銀行", "824": "LINE Bank",
+        "826": "樂天銀行"
+    };
+
+    // 2. 讀取網址參數
     const urlParams = new URLSearchParams(window.location.search);
-    const bank = urlParams.get('b');
+    const bankCode = urlParams.get('b');
     const acc = urlParams.get('a');
 
-    // 2. 顯示資料
-    if(bank && acc) {
-        document.getElementById('showBank').innerText = bank;
-        document.getElementById('showAcc').innerText = acc;
+    const bankDisplay = document.getElementById('showBank');
+    const accDisplay = document.getElementById('showAcc');
+
+    if(bankCode && acc) {
+        // --- 處理銀行顯示 ---
+        // 查表找中文名，找不到就留空
+        const name = bankMap[bankCode] || "";
+        
+        // 顯示內容：上面是大數字，下面是小中文
+        if(name) {
+            bankDisplay.innerHTML = `${bankCode}<span class="bank-name">(${name})</span>`;
+        } else {
+            bankDisplay.innerText = bankCode; // 找不到名字就只顯示數字
+        }
+        
+        // 【關鍵】設定一個隱藏屬性 data-copy，存純數字，給複製功能用
+        bankDisplay.setAttribute('data-copy', bankCode);
+
+        // --- 處理帳號顯示 ---
+        accDisplay.innerText = acc;
+        accDisplay.setAttribute('data-copy', acc);
     } else {
-        document.querySelector('.card').innerHTML = "<p style='color:red'>⚠️ 錯誤：無效的連結</p>";
+        document.querySelector('.card').innerHTML = "<p style='color:red; margin-top:20px;'>⚠️ 錯誤：無效的連結</p>";
     }
 
-    // 3. 複製功能
+    // 3. 智慧複製功能
     function copyText(element, id) {
-        const text = document.getElementById(id).innerText;
+        const target = document.getElementById(id);
+        // 優先讀取 data-copy 裡的純數字，如果沒有才讀取顯示文字
+        const text = target.getAttribute('data-copy') || target.innerText;
         
-        // 執行複製
         navigator.clipboard.writeText(text).then(() => {
-            // 顯示「已複製」提示
             const hint = element.nextElementSibling;
             hint.classList.add('show');
             setTimeout(() => hint.classList.remove('show'), 1500);
         }).catch(err => {
-            alert('複製失敗，請手動複製');
+            alert('複製失敗，請手動輸入');
         });
     }
 </script>
