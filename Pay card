@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>付款資訊</title>
+    <style>
+        body {
+            background-color: #f0f2f5;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .card {
+            background: white;
+            width: 85%;
+            max-width: 320px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        .header { margin-bottom: 25px; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+        .header h2 { margin: 0; color: #333; font-size: 20px; }
+        
+        .section { margin-bottom: 25px; }
+        .label { font-size: 13px; color: #888; margin-bottom: 5px; }
+        
+        /* 讓數字大一點，且看起來像按鈕 */
+        .value-box {
+            background: #f8f9fa;
+            color: #333;
+            font-size: 28px;
+            font-weight: bold;
+            font-family: monospace; /* 等寬字體，方便閱讀數字 */
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #eee;
+            cursor: pointer; /* 讓滑鼠變成手指 */
+            position: relative;
+        }
+        .value-box:active { background: #e2e6ea; } /* 點下去的效果 */
+        
+        .hint { font-size: 12px; color: #28a745; margin-top: 5px; height: 15px; opacity: 0; transition: opacity 0.3s;}
+        .hint.show { opacity: 1; }
+
+        .footer { font-size: 12px; color: #aaa; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h2>轉帳資訊</h2>
+    </div>
+
+    <div class="section">
+        <div class="label">銀行代碼</div>
+        <div class="value-box" onclick="copyText(this, 'showBank')">
+            <span id="showBank">---</span>
+        </div>
+        <div class="hint">已複製代碼！</div>
+    </div>
+
+    <div class="section">
+        <div class="label">銀行帳號</div>
+        <div class="value-box" onclick="copyText(this, 'showAcc')">
+            <span id="showAcc">---</span>
+        </div>
+        <div class="hint">已複製帳號！</div>
+    </div>
+
+    <div class="footer">點擊數字即可複製</div>
+</div>
+
+<script>
+    // 1. 讀取網址參數
+    const urlParams = new URLSearchParams(window.location.search);
+    const bank = urlParams.get('b');
+    const acc = urlParams.get('a');
+
+    // 2. 顯示資料
+    if(bank && acc) {
+        document.getElementById('showBank').innerText = bank;
+        document.getElementById('showAcc').innerText = acc;
+    } else {
+        document.querySelector('.card').innerHTML = "<p style='color:red'>⚠️ 錯誤：無效的連結</p>";
+    }
+
+    // 3. 複製功能
+    function copyText(element, id) {
+        const text = document.getElementById(id).innerText;
+        
+        // 執行複製
+        navigator.clipboard.writeText(text).then(() => {
+            // 顯示「已複製」提示
+            const hint = element.nextElementSibling;
+            hint.classList.add('show');
+            setTimeout(() => hint.classList.remove('show'), 1500);
+        }).catch(err => {
+            alert('複製失敗，請手動複製');
+        });
+    }
+</script>
+
+</body>
+</html>
